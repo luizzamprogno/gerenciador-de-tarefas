@@ -10,11 +10,10 @@ def define_cursor(conexao):
 
 def create_table(cursor, conexao):
 
-
     cursor.execute('''
 
         CREATE TABLE IF NOT EXISTS Tarefas (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id INTEGER PRIMARY KEY,
         tarefa TEXT NOT NULL,
         status TEXT NOT NULL
 
@@ -22,7 +21,7 @@ def create_table(cursor, conexao):
     ''')
 
     conexao.commit()
-
+# implementar ids automáticos e sempre sequenciais
 def create_data(cursor, conexao):
 
     tarefa = input('Digite a nova tarefa: ')
@@ -77,10 +76,15 @@ def delete_data(cursor, conexao):
         WHERE id = ?
 
     ''', (deletar_id,)) # a vírgula forma uma tupla de um unico elemento
+    #print(cursor.rowcount)
+    if cursor.rowcount == 0:
+        #print(cursor.rowcount)
+        print(f'Nenhuma tarefa com o ID {deletar_id} encontrada para deletar')
+    else:
+        print(f'Tarefa com id {deletar_id} apagada com sucesso')
 
     conexao.commit()
-    print(f'Tarefa com id {deletar_id} apagada com sucesso')
-
+    
 def main_menu():
     while True:
         try:
@@ -104,7 +108,7 @@ def secondary_menu():
     while True:
         try:
             return int(input('''O que deseja fazer agora?
-                                Voltar ao meun principal - (1)
+                                Voltar ao meunu principal - (1)
                                 Executar a mesma tarefa - (2)
                         '''))
         except ValueError:
