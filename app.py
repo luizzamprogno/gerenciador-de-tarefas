@@ -122,24 +122,19 @@ def handle_secondary_menu(action, cursor, conexao):
 
 def user_decision(cursor, conexao):
 
+    choices = {
+        1: create_data,
+        2: read_data,
+        3: update_data,
+        4: delete_data
+    }
+
     while True:
         user_choice = main_menu()
 
-        if user_choice == 1:
-            create_data(cursor, conexao)
-            handle_secondary_menu(create_data, cursor, conexao)
-            
-        elif user_choice == 2:
-            read_data(cursor, conexao)
-            handle_secondary_menu(read_data, cursor, conexao)
-
-        elif user_choice == 3:
-            update_data(cursor, conexao)
-            handle_secondary_menu(update_data, cursor, conexao)
-
-        elif user_choice == 4:
-            delete_data(cursor, conexao)
-            handle_secondary_menu(delete_data, cursor, conexao)
+        if user_choice in choices:
+            choices[user_choice](cursor, conexao)
+            handle_secondary_menu(choices[user_choice], cursor, conexao)
 
         elif user_choice == 5:
             print('Encerrando o programa')
