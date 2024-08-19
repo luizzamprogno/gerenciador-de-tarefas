@@ -32,6 +32,20 @@ def validate_status():
         except ValueError:
             print('Entrada inválida. Digite 0 ou 1')
 
+def id_existence(cursor):
+    tarefa_id = int(input('Digite o ID da tarefa: '))
+
+    cursor.execute('''
+    SELECT id
+    FROM tarefas
+    WHERE id = ?
+    
+    ''', (tarefa_id,))
+
+    resultado = cursor.fetchone()
+
+    return tarefa_id, resultado
+
 def create_data(cursor, conexao):
 
     tarefa = input('Digite a nova tarefa: ')
@@ -63,52 +77,64 @@ def read_data(cursor, conexao):
     print()
 
 def update_task_status(cursor, conexao):
-    tarefa_id = int(input('Digite o ID da tarefa a ser atualizada: '))
-    novo_status = validate_status()
+    tarefa_id, resultado = id_existence(cursor)
 
-    cursor.execute('''
-        UPDATE Tarefas
-        SET status = ?
-        WHERE id = ?
-    
-    ''', (novo_status, tarefa_id))
-    conexao.commit()
-    print(f'Status da tarefa de ID {tarefa_id} atualizado com sucesso')
+    if resultado:
+        novo_status = validate_status()
+
+        cursor.execute('''
+            UPDATE Tarefas
+            SET status = ?
+            WHERE id = ?
+        
+        ''', (novo_status, tarefa_id))
+        conexao.commit()
+        print(f'Status da tarefa de ID {tarefa_id} atualizado com sucesso')
+    else:
+        print(f'Nenhuma tarefa com o ID {tarefa_id} encontrada')
 
 def update_data(cursor, conexao):
 
-    tarefa_id = int(input('Digite o ID da tarefa a ser atualizada: '))
-    nova_tarefa = input('Digite a nova tarefa: ')
-    novo_status = validate_status()
+    tarefa_id, resultado = id_existence(cursor)
+    
+    if resultado:
+        nova_tarefa = input('Digite a nova tarefa: ')
+        novo_status = validate_status()
 
-    cursor.execute('''
+        cursor.execute('''
 
-        UPDATE tarefas
-        SET tarefa = ?, status = ?
-        WHERE id = ?
+            UPDATE tarefas
+            SET tarefa = ?, status = ?
+            WHERE id = ?
 
-    ''', (nova_tarefa, novo_status, tarefa_id))
+        ''', (nova_tarefa, novo_status, tarefa_id))
+
+        print(f'Tarefa de ID {tarefa_id} atualizada com sucesso')
+    else:
+        print(f'Nenhuma tarefa com o ID {tarefa_id} encontrada')
 
     conexao.commit()
-    print(f'Tarefa de ID {tarefa_id} atualizada com sucesso')
-
+    
 def delete_data(cursor, conexao):
 
-    deletar_id = input('Digite o ID da tarefa a ser deletada: ')
+    tarefa_id, resultado = id_existence(cursor)
 
-    cursor.execute('''
+    if resultado:
 
-        DELETE FROM  tarefas
+        cursor.execute('''
 
-        WHERE id = ?
+            DELETE FROM tarefas
 
-    ''', (deletar_id,)) # a vírgula forma uma tupla de um unico elemento
-    #print(cursor.rowcount)
-    if cursor.rowcount == 0:
-        #print(cursor.rowcount)
-        print(f'Nenhuma tarefa com o ID {deletar_id} encontrada para deletar')
+            WHERE id = ?
+
+        ''', (tarefa_id,))
+
+        print(f'Tarefa com id {tarefa_id} apagada com sucesso')
+
     else:
-        print(f'Tarefa com id {deletar_id} apagada com sucesso')
+        print(f'Nenhuma tarefa com o ID {tarefa_id} encontrada')
+
+        
 
     conexao.commit()
     
@@ -121,12 +147,12 @@ def main_menu():
             
             Selecione abaixo o que deseja fazer:
 
-            Adicionar nova tarefa - (1)
-            Visualizar todas as tarefas - (2)
-            Atualizar uma tarefa existente - (3)
-            Atualizar o status de uma tarefa - (4)
-            Apagar um tarefa - (5)
-            Sair - (6)
+            (1) - Adicionar nova tarefa
+            (2) - Visualizar todas as tarefas
+            (3) - Atualizar uma tarefa existente
+            (4) - Atualizar o status de uma tarefa
+            (5) - Apagar um tarefa
+            (6) - Sair
             
             '''))
         except ValueError:
@@ -136,8 +162,8 @@ def secondary_menu():
     while True:
         try:
             return int(input('''O que deseja fazer agora?
-                                Voltar ao meunu principal - (1)
-                                Executar a mesma tarefa - (2)
+                                (1) - Voltar ao meunu principal
+                                (2) - Executar a mesma tarefa
                         '''))
         except ValueError:
             print('Entrada inválida, por favor digite 1 para voltar ao menu principal, ou 2 para realizar a mesma tarefa')
