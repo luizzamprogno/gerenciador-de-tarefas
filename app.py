@@ -35,7 +35,7 @@ def validate_status():
 def create_data(cursor, conexao):
 
     tarefa = input('Digite a nova tarefa: ')
-    status = validate_status
+    status = validate_status()
 
     cursor.execute('''
 
@@ -54,9 +54,13 @@ def read_data(cursor, conexao):
         SELECT * FROM tarefas
 
     ''')
+    tarefas = cursor.fetchall()
 
-    for linha in cursor.fetchall():
-        print(linha)
+    print('\nLista de Tarefas:')
+    for linha in tarefas:
+        status_str = 'Feita' if linha[2] else 'Não feita'
+        print(f'ID: {linha[0]}, Tarefa: {linha[1]}, Status: {status_str}')
+    print()
 
 def update_task_status(cursor, conexao):
     tarefa_id = int(input('Digite o ID da tarefa a ser atualizada: '))
@@ -165,7 +169,7 @@ def user_decision(cursor, conexao):
             choices[user_choice](cursor, conexao)
             handle_secondary_menu(choices[user_choice], cursor, conexao)
 
-        elif user_choice == 5:
+        elif user_choice == 6:
             print('Encerrando o programa')
             conexao.close()
             break
