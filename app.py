@@ -1,11 +1,9 @@
 import sqlite3
 
 def create_conection():
-
     return sqlite3.connect('tarefas.db')
 
 def define_cursor(conexao):
-
     return conexao.cursor()
 
 def create_table(cursor, conexao):
@@ -13,19 +11,31 @@ def create_table(cursor, conexao):
     cursor.execute('''
 
         CREATE TABLE IF NOT EXISTS Tarefas (
-        id INTEGER PRIMARY KEY,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         tarefa TEXT NOT NULL,
-        status TEXT NOT NULL
+        status INTEGER DEFAULT 0
 
         );
     ''')
 
     conexao.commit()
 # implementar ids automáticos e sempre sequenciais
+
+def validate_status():
+    while True:
+        try:
+            status = int(input('Digite o status da tarefa (0 - não feita, 1 - feita)'))
+            if status in[0, 1]:
+                return status
+            else:
+                print('Status inválido. Digite 0 ou 1')
+        except ValueError:
+            print('Entrada inválida. Digite 0 ou 1')
+
 def create_data(cursor, conexao):
 
     tarefa = input('Digite a nova tarefa: ')
-    status = input('Digite o status da nova tarefa: ')
+    status = validate_status
 
     cursor.execute('''
 
@@ -48,11 +58,24 @@ def read_data(cursor, conexao):
     for linha in cursor.fetchall():
         print(linha)
 
+def update_task_status(cursor, conexao):
+    tarefa_id = int(input('Digite o ID da tarefa a ser atualizada: '))
+    novo_status = validate_status()
+
+    cursor.execute('''
+        UPDATE Tarefas
+        SET status = ?
+        WHERE id = ?
+    
+    ''', (novo_status, tarefa_id))
+    conexao.commit()
+    print(f'Status da tarefa de ID {tarefa_id} atualizado com sucesso')
+
 def update_data(cursor, conexao):
 
-    tarefa_a_alterar = int(input('Qual tarefa gostaria de alterar (ID)? '))
+    tarefa_id = int(input('Digite o ID da tarefa a ser atualizada: '))
     nova_tarefa = input('Digite a nova tarefa: ')
-    novo_status = input('Digite o novo status: ')
+    novo_status = validate_status()
 
     cursor.execute('''
 
@@ -60,14 +83,14 @@ def update_data(cursor, conexao):
         SET tarefa = ?, status = ?
         WHERE id = ?
 
-    ''', (nova_tarefa, novo_status, tarefa_a_alterar))
+    ''', (nova_tarefa, novo_status, tarefa_id))
 
     conexao.commit()
-    print(f'Tarefa de ID {tarefa_a_alterar} atualizada com sucesso')
+    print(f'Tarefa de ID {tarefa_id} atualizada com sucesso')
 
 def delete_data(cursor, conexao):
 
-    deletar_id = input('Qual tarefa deseja deletar (ID): ')
+    deletar_id = input('Digite o ID da tarefa a ser deletada: ')
 
     cursor.execute('''
 
@@ -97,8 +120,9 @@ def main_menu():
             Adicionar nova tarefa - (1)
             Visualizar todas as tarefas - (2)
             Atualizar uma tarefa existente - (3)
-            Apagar um tarefa - (4)
-            Sair - (5)
+            Atualizar o status de uma tarefa - (4)
+            Apagar um tarefa - (5)
+            Sair - (6)
             
             '''))
         except ValueError:
@@ -130,7 +154,8 @@ def user_decision(cursor, conexao):
         1: create_data,
         2: read_data,
         3: update_data,
-        4: delete_data
+        4: update_task_status,
+        5:delete_data
     }
 
     while True:
@@ -153,7 +178,6 @@ def main():
     cursor = define_cursor(conexao)
     create_table(cursor, conexao)
     user_decision(cursor, conexao)
-
     conexao.close()
 
 if __name__ == '__main__':
